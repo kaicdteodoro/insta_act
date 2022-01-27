@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,12 +14,14 @@ use App\Http\Controllers\PostController;
 |
 */
 
-Route::get('/', [AuthController::class, 'login'])->name('login');
-Route::get('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/signin', [AuthController::class, 'signin'])->name('signin');
-Route::post('/signup', [AuthController::class, 'signup'])->name('signup');
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::controller(AuthController::class)->group(function ($router) {
+    $router->get('/', 'login')->name('login');
+    $router->get('/register', 'register')->name('register');
+    $router->post('/signin', 'signin')->name('signin');
+    $router->post('/signup', 'signup')->name('signup');
+    $router->get('/logout', 'logout')->middleware('auth')->name('logout');
+});
 
-Route::get('dashboard', function () {
-    return view('dashboard');
-})->name('dashboard')->middleware('auth');
+Route::middleware('auth')->group(function ($router) {
+    $router->view('dashboard', 'dashboard')->name('dashboard');
+});
