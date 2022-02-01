@@ -1,10 +1,16 @@
-FROM node:16.13
+FROM nginx:1.21
+
 WORKDIR "/app"
 
-RUN apt-get update; \
-    apt-get -y --no-install-recommends install \
-        git \
-        php8.1-mysql \
-        php8.1-redis; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+RUN apt-get update && apt-get upgrade -y
+
+RUN apt-get install -y curl \
+	git
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+	apt-get install -y nodejs
+
+RUN npm install -g yarn
+
+CMD chmod -R 777 .
+EXPOSE 80

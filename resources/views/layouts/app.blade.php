@@ -48,6 +48,14 @@
             })
         </script>
     @endif
+    @foreach($errors->all() as $error)
+        <script>
+            Toast.fire({
+                icon: 'error',
+                title: '{{ $error }}'
+            })
+        </script>
+    @endforeach
 
     @stack('scripts')
 </body>

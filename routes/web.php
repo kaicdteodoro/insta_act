@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
@@ -15,7 +16,7 @@ use App\Http\Controllers\AuthController;
 */
 
 Route::controller(AuthController::class)->group(function ($router) {
-    $router->get('/', 'login')->name('login');
+    $router->get('/login', 'login')->name('login');
     $router->get('/register', 'register')->name('register');
     $router->post('/signin', 'signin')->name('signin');
     $router->post('/signup', 'signup')->name('signup');
@@ -23,5 +24,12 @@ Route::controller(AuthController::class)->group(function ($router) {
 });
 
 Route::middleware('auth')->group(function ($router) {
-    $router->view('dashboard', 'dashboard')->name('dashboard');
+    $router->controller(PostController::class)->prefix('posts')->group(function ($router) {
+        $router->get('', 'index')->name('posts.index');
+        $router->get('create', 'create')->name('posts.create');
+        $router->post('store', 'store')->name('posts.store');
+//        $router->get('', '')->name('posts.');
+//        $router->get('', '');
+    });
+    $router->redirect('', 'posts')->name('dashboard');
 });
