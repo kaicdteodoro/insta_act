@@ -24,12 +24,14 @@ Route::controller(AuthController::class)->group(function ($router) {
 });
 
 Route::middleware('auth')->group(function ($router) {
-    $router->controller(PostController::class)->prefix('posts')->group(function ($router) {
-        $router->get('', 'index')->name('posts.index');
+
+    $router->redirect('', [PostController::class, 'index'])->name('posts.index');
+    $router->controller(PostController::class)
+        ->prefix('posts')
+        ->group(function ($router) {
         $router->get('create', 'create')->name('posts.create');
         $router->post('store', 'store')->name('posts.store');
 //        $router->get('', '')->name('posts.');
 //        $router->get('', '');
     });
-    $router->redirect('', 'posts')->name('dashboard');
 });

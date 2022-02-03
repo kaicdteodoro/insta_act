@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use App\Services\PostService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,13 @@ use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
+    protected $service;
+
+    public function __construct(PostService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +29,7 @@ class PostController extends Controller
      */
     public function index(): View
     {
-        $posts = Post::get();
+        $posts = Post::orderBy('id', 'DESC')->get();
         return view('dashboard', compact('posts'));
     }
 
@@ -38,24 +46,25 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StorePostRequest  $request
+     * @param \App\Http\Requests\StorePostRequest $request
      * @return Application|Redirector|RedirectResponse
      */
     public function store(StorePostRequest $request)
     {
-
-       $img = $request->photo->store('public/images');
-       $post["image"] = Storage::url($img);
-       $post["description"] = $request->description;
-       $post["user_id"] = auth()->user()->id;
-       $teste = Post::create($post);
-       return redirect('posts');
+        $input["description"] = $request->description;
+        $input["user_id"] = auth()->id();
+        $response = $this->service->store($input, $request->photo);
+        $response = json_decode($response->content());
+        if (!$response->success) {
+            return back()->with('error', $response["message"]);
+        }
+        return redirect()->route('posts.index');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Post  $post
+     * @param \App\Models\Post $post
      * @return Response
      */
     public function show(Post $post)
@@ -66,7 +75,7 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Post  $post
+     * @param \App\Models\Post $post
      * @return Response
      */
     public function edit(Post $post)
@@ -77,8 +86,8 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdatePostRequest  $request
-     * @param  \App\Models\Post  $post
+     * @param \App\Http\Requests\UpdatePostRequest $request
+     * @param \App\Models\Post $post
      * @return Response
      */
     public function update(UpdatePostRequest $request, Post $post)
@@ -89,7 +98,7 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Post  $post
+     * @param \App\Models\Post $post
      * @return Response
      */
     public function destroy(Post $post)
